@@ -89,6 +89,9 @@ const IconChevronLeft = () => (
 const IconChevronRight = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
 );
+const IconAlertTriangle = () => (
+  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--sale)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: "16px" }}><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+);
 
 /* ================================================================
    MAIN PAGE COMPONENT
@@ -99,6 +102,7 @@ export default function Home() {
   const [notifyModal, setNotifyModal] = useState(null);
   const [search, setSearch] = useState("");
   const [heroIndex, setHeroIndex] = useState(0);
+  const [videoError, setVideoError] = useState(false);
   const videoRef = useRef(null);
 
   /* ── Auto-rotate hero banner every 5 seconds ── */
@@ -163,6 +167,7 @@ export default function Home() {
   /* ── Video overlay controls ── */
   const openVideo = useCallback((movie) => {
     setVideoOverlay(movie);
+    setVideoError(false);
   }, []);
 
   useEffect(() => {
@@ -177,6 +182,12 @@ export default function Home() {
       videoRef.current.pause();
     }
     setVideoOverlay(null);
+    setVideoError(false);
+  }, []);
+
+  const handleVideoError = useCallback((e) => {
+    console.error("Video source failed to load:", e);
+    setVideoError(true);
   }, []);
 
   /* ── Keyboard: Esc to close ── */
@@ -423,15 +434,25 @@ export default function Home() {
           <IconX />
         </button>
         <div className="video-player-container">
-          {videoOverlay && (
-            <video
-              ref={videoRef}
-              controls
-              playsInline
-              preload="auto"
-            >
-              <source src={videoOverlay.videoSrc} type="video/mp4" />
-            </video>
+          {videoOverlay && videoError ? (
+            <div className="video-error-container">
+              <IconAlertTriangle />
+              <h3 className="video-error-title">Network Error</h3>
+              <p className="video-error-message">
+                The video trailer for <strong>&ldquo;{videoOverlay.title}&rdquo;</strong> could not be loaded. Please check your network connection or try again later.
+              </p>
+            </div>
+          ) : (
+            videoOverlay && (
+              <video
+                ref={videoRef}
+                controls
+                playsInline
+                preload="auto"
+                src={videoOverlay.videoSrc}
+                onError={handleVideoError}
+              />
+            )
           )}
           {videoOverlay && (
             <span className="video-player-title">{videoOverlay.title}</span>
