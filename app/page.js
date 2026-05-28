@@ -118,6 +118,13 @@ export default function Home() {
     return () => observer.disconnect();
   }, [filteredMovies]);
 
+  /* ── Register Service Worker for video caching ── */
+  useEffect(() => {
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("/sw.js").catch(() => {});
+    }
+  }, []);
+
   /* ── Video overlay controls ── */
   const openVideo = useCallback((movie) => {
     setVideoOverlay(movie);
