@@ -17,7 +17,7 @@ const MOVIES = [
     year: "2026",
     badge: "Coming Soon",
     thumbnail: "/thumbnails/welcome-to-the-jungle.jpg",
-    videoSrc: `${VIDEO_BUCKET}/Welcome%20To%20The%20Jungle%20-%20Official%20Teaser%20%20In%20Cinemas%20%2026th%20June%202026%20-%20Star%20Studios%20(1080p,%20h264).mp4`,
+    videoSrc: "https://d2h58dsjpbzmve.cloudfront.net/50kjr%2Ffile%2F130200cb7ba80242a26d4c6e40d01842_1d5150b877ce5fa4fd0f73b36e1ee5d3.mp4?response-content-disposition=inline%3Bfilename%3D%22130200cb7ba80242a26d4c6e40d01842_1d5150b877ce5fa4fd0f73b36e1ee5d3.mp4%22%3B&response-content-type=video%2Fmp4&Expires=1780020030&Signature=csb6p~dbYbMRofCAh2eLFqamGFQCPuH3KMut46lSb02LMjQsdiUeJtFywFHKkjeqLVahp6pE4hd2aEiZ0xW3XKBMONOHTpMwY7e9pSlM41EjO1hfTbNbSOcir61aV5hllVp6~G0WY5OMFV3020biijRiah7M7zfjH0R11EXd7pwyezoaBVWiumrPmD06OAoANcfzpIBFrq0mz28IGlwYqRIc-t7TZdx1Hhg39sSiTy7-DoDgQyqg3c3tZXSqLX5jS6~zlhD7dqb31pZ2ztka8fzeaSNa2PNh8v01fGADUuBpY1E~y0t~ecCHJRCC~5Cs2EROSu0PGOw4oWomfBim0A__&Key-Pair-Id=APKAJT5WQLLEOADKLHBQ",
     featured: true,
     description:
       "The wildest adventure of the year — arriving June 26, 2026.",
@@ -39,7 +39,7 @@ const MOVIES = [
     year: "2025",
     badge: "Coming Soon",
     thumbnail: "/thumbnails/disclosure-day.jpg",
-    videoSrc: `${VIDEO_BUCKET}/Disclosure%20Day%20%20Final%20Trailer%20-%20Universal%20Pictures%20(1080p,%20h264).mp4`,
+    videoSrc: "https://d2n7fc0kw20ri7.cloudfront.net/33hjr%2Ffile%2F12b4b2f204aa7cf9c75bf8ef0b70e893_fbe9a31936719fd602fad278a07cb9f2.mp4?response-content-disposition=inline%3Bfilename%3D%2212b4b2f204aa7cf9c75bf8ef0b70e893_fbe9a31936719fd602fad278a07cb9f2.mp4%22%3B&response-content-type=video%2Fmp4&Expires=1780019951&Signature=TGRNrGF14HN2tDlSg3GX6cLK5hvKbSJPtt29pq8pfICyD3MmH7bdrN0S4djrdqxx0ItpzUs2iWG4R8maqGDriuYxu~oMAVmDpKO5qESGjR5N5XN2udTy2vLPBNxDhY~~1FHwFJ~bhratdErNyixsSPuyiVC-2Itg-2sn7cxQKyni-qpF51h4hm3gy~uxAgOsKwl25vEnib7hKe~N7lUIJguPUv-3dBebTL4NGFotTqNwACLNzdkklFHRsZAz~RqVq-7KD1eY1W86PQO2PkR0ZdiivBj0Vf9geHHjQ9f44SgbU5hIAi3qIRQZoJMQH0pRwfv6sTK2OZXRlAW3cV~KqQ__&Key-Pair-Id=APKAJT5WQLLEOADKLHBQ",
     description: "The truth was never meant to be found.",
   },
   {
@@ -83,6 +83,12 @@ const IconCheck = () => (
 const IconMail = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
 );
+const IconChevronLeft = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+);
+const IconChevronRight = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+);
 
 /* ================================================================
    MAIN PAGE COMPONENT
@@ -92,7 +98,17 @@ export default function Home() {
   const [videoOverlay, setVideoOverlay] = useState(null);
   const [notifyModal, setNotifyModal] = useState(null);
   const [search, setSearch] = useState("");
+  const [heroIndex, setHeroIndex] = useState(0);
   const videoRef = useRef(null);
+
+  /* ── Auto-rotate hero banner every 5 seconds ── */
+  useEffect(() => {
+    if (videoOverlay || notifyModal) return;
+    const interval = setInterval(() => {
+      setHeroIndex((prev) => (prev + 1) % MOVIES.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [videoOverlay, notifyModal]);
 
   /* ── Filter movies by search ── */
   const filteredMovies = MOVIES.filter(
@@ -101,7 +117,7 @@ export default function Home() {
       m.genre.toLowerCase().includes(search.toLowerCase())
   );
 
-  const featured = MOVIES.find((m) => m.featured) || MOVIES[0];
+  const featured = MOVIES[heroIndex];
 
   /* ── Sequential card reveal on scroll ── */
   useEffect(() => {
@@ -241,15 +257,16 @@ export default function Home() {
       {/* ═══════ HERO CAMPAIGN TILE ═══════ */}
       <section className="hero" id="hero">
         <img
+          key={`hero-img-${heroIndex}`}
           className="hero-media"
           src={featured.thumbnail}
           alt={featured.title}
         />
         <div className="hero-overlay" />
-        <div className="hero-content">
+        <div key={`hero-content-${heroIndex}`} className="hero-content">
           <div className="hero-badge">
             <span className="dot" />
-            Coming Soon
+            {featured.badge}
           </div>
           <h1 className="hero-title">{featured.title}</h1>
           <p className="hero-subtitle">{featured.description}</p>
@@ -270,6 +287,34 @@ export default function Home() {
               <IconBell />
             </button>
           </div>
+        </div>
+
+        {/* Navigation Arrows */}
+        <button
+          className="hero-arrow hero-arrow-left"
+          onClick={() => setHeroIndex((prev) => (prev - 1 + MOVIES.length) % MOVIES.length)}
+          aria-label="Previous slide"
+        >
+          <IconChevronLeft />
+        </button>
+        <button
+          className="hero-arrow hero-arrow-right"
+          onClick={() => setHeroIndex((prev) => (prev + 1) % MOVIES.length)}
+          aria-label="Next slide"
+        >
+          <IconChevronRight />
+        </button>
+
+        {/* Indicator Dots */}
+        <div className="hero-indicators">
+          {MOVIES.map((_, idx) => (
+            <button
+              key={idx}
+              className={`hero-dot ${idx === heroIndex ? "active" : ""}`}
+              onClick={() => setHeroIndex(idx)}
+              aria-label={`Slide ${idx + 1}`}
+            />
+          ))}
         </div>
       </section>
 
